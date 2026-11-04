@@ -264,8 +264,9 @@ function leyendaHtml(items, tituloLeyenda = "") {
   return partes.join("");
 }
 
-function tarjeta(etiqueta, cifra, nota) {
-  return `<div class="kpi"><div class="kpi-t">${esc(etiqueta)}</div><div class="kpi-v">${esc(cifra)}</div>`
+function tarjeta(etiqueta, cifra, nota, junto = "") {
+  const aparte = junto ? ` <span class="kpi-p">${esc(junto)}</span>` : "";
+  return `<div class="kpi"><div class="kpi-t">${esc(etiqueta)}</div><div class="kpi-v">${esc(cifra)}${aparte}</div>`
     + `<div class="kpi-n">${esc(nota)}</div></div>`;
 }
 
@@ -818,13 +819,17 @@ const [T_2017, T_2023] = FOCO;
 const destruyo = (f, t) => f[t] === VIAL.destruccion;
 const tuvoDano = (f, t) => f[t] !== VIAL.ninguno;
 
-/** Cada grupo de la lista corresponde a una tarjeta, para que las dos cuentas coincidan. */
+/** La lista tiene un grupo por cada cifra de las tarjetas, para que las dos cuentas coincidan. */
 const GRUPOS_DECRETO = new Map([
   ["todos", {t: "Todos los declarados", f: () => true}],
-  ["2017", {t: "Con destrucción vial en el Niño 2017", f: (f) => destruyo(f, T_2017)}],
-  ["2023", {t: "Con destrucción vial en el Niño 2023", f: (f) => destruyo(f, T_2023)}],
-  ["ambos", {t: "Con destrucción vial en ambos Niños", f: (f) => destruyo(f, T_2017) && destruyo(f, T_2023)}],
-  ["ninguno", {t: "Sin destrucción vial en ninguno", f: (f) => !destruyo(f, T_2017) && !destruyo(f, T_2023)}],
+  ["dano2017", {t: "Con cualquier daño vial en el Niño 2017", f: (f) => tuvoDano(f, T_2017)}],
+  ["dano2023", {t: "Con cualquier daño vial en el Niño 2023", f: (f) => tuvoDano(f, T_2023)}],
+  ["danoAmbos", {t: "Con cualquier daño vial en ambos Niños", f: (f) => tuvoDano(f, T_2017) && tuvoDano(f, T_2023)}],
+  ["danoNinguno", {t: "Sin daño vial en ninguno", f: (f) => !tuvoDano(f, T_2017) && !tuvoDano(f, T_2023)}],
+  ["dest2017", {t: "Con destrucción vial en el Niño 2017", f: (f) => destruyo(f, T_2017)}],
+  ["dest2023", {t: "Con destrucción vial en el Niño 2023", f: (f) => destruyo(f, T_2023)}],
+  ["destAmbos", {t: "Con destrucción vial en ambos Niños", f: (f) => destruyo(f, T_2017) && destruyo(f, T_2023)}],
+  ["destNinguno", {t: "Sin destrucción vial en ninguno", f: (f) => !destruyo(f, T_2017) && !destruyo(f, T_2023)}],
 ]);
 
 const COLUMNAS_DECRETO = [
@@ -848,6 +853,13 @@ function cruzarDecreto() {
 }
 
 const zonaDecreto = () => (estado.departamento === null ? D.decreto : D.decreto.filter((f) => f.departamento === estado.departamento));
+
+/** Cuántos distritos cumplen `campo` > 0 en cada Niño y en los dos a la vez. */
+function distritosPorNino(filas, campo) {
+  const en = (t) => new Set(filas.filter((f) => f.temporada === t && f[campo] > 0).map((f) => f.ubigeo));
+  const a = en(T_2017), b = en(T_2023);
+  return {"2017": a.size, "2023": b.size, Ambos: [...a].filter((u) => b.has(u)).length};
+}
 
 function listaDecreto() {
   const patron = sinAcentos(estado.busquedaDecreto.trim()).toUpperCase();
@@ -874,33 +886,42 @@ function dibujarEmergencia() {
     + `por peligro inminente ante intensas precipitaciones pluviales «asociadas al Fenómeno El Niño 2026-2027»`
     + (departamento === null ? "." : `; <strong>${num(zona.length)}</strong> de ellos están en ${esc(C.zona)}.`);
 
-  const d17 = cuantos(GRUPOS_DECRETO.get("2017").f), d23 = cuantos(GRUPOS_DECRETO.get("2023").f);
-  const dAmbos = cuantos(GRUPOS_DECRETO.get("ambos").f), dNinguno = cuantos(GRUPOS_DECRETO.get("ninguno").f);
+  const cifra = Object.fromEntries([...GRUPOS_DECRETO].map(([clave, g]) => [clave, cuantos(g.f)]));
+
+  // La base de cada porcentaje: todos los distritos de la zona con ese daño, estén o no en el decreto.
+  const conDano = distritosPorNino(C.zonaDistritos, "distritos_con_dano");
+  const conDestruccion = distritosPorNino(C.zonaDistritos, "distritos_con_destruccion");
+  const deZona = departamento === null ? "del Perú" : `de ${C.zona}`;
+  const estan = (n) => (n === 0 ? "ninguno está" : n === 1 ? "1 está" : `${num(n)} están`);
+
+  const coincidencia = (nino, cuando, destruccion) => {
+    const n = cifra[`dano${nino}`], de = conDano[nino];
+    const m = cifra[`dest${nino}`], deM = conDestruccion[nino];
+    if (!de) return tarjeta(`Ningún distrito ${deZona} tuvo daño vial ${cuando}`, "0", "");
+    const etiqueta = de === 1
+      ? `Del único distrito ${deZona} con cualquier daño vial ${cuando}, en el decreto`
+      : `De los ${num(de)} distritos ${deZona} con cualquier daño vial ${cuando}, están en el decreto`;
+    const nota = !deM ? `Ninguno ${destruccion}.`
+      : deM === 1 ? `El único ${destruccion} ${m ? "sí" : "no"} está en el decreto (${porc(m, deM)}).`
+      : `De los ${num(deM)} ${destruccion}, ${estan(m)} en el decreto (${porc(m, deM)}).`;
+    return tarjeta(etiqueta, num(n), nota, `(${porc(n, de)})`);
+  };
+
   $("dec-kpis").innerHTML = [
     tarjeta("Distritos declarados en emergencia", num(zona.length), ""),
-    tarjeta("Con destrucción vial en el Niño 2017", num(d17),
-            `El ${porc(d17, zona.length)} de los declarados. Con cualquier daño vial: ${num(cuantos((f) => tuvoDano(f, T_2017)))}.`),
-    tarjeta("Con destrucción vial en el Niño 2023", num(d23),
-            `El ${porc(d23, zona.length)} de los declarados. Con cualquier daño vial: ${num(cuantos((f) => tuvoDano(f, T_2023)))}.`),
-    tarjeta("Con destrucción vial en ambos Niños", num(dAmbos),
-            `El ${porc(dAmbos, zona.length)} de los declarados. Con cualquier daño vial en ambos: `
-            + `${num(cuantos((f) => tuvoDano(f, T_2017) && tuvoDano(f, T_2023)))}.`),
+    coincidencia("2017", "en el Niño 2017", "con destrucción vial"),
+    coincidencia("2023", "en el Niño 2023", "con destrucción vial"),
+    coincidencia("Ambos", "en ambos Niños", "con destrucción vial en ambos"),
   ].join("");
 
-  const grupo = (t) => C.zonaDistritos.filter((f) => f.temporada === t && f.distritos_con_destruccion > 0).length;
-  const partes = [[d17, grupo(T_2017), "del Niño 2017"], [d23, grupo(T_2023), "del Niño 2023"], [dAmbos, C.zonaReinc.length, "de ambos"]]
-    .filter(([, de]) => de > 0)
-    .map(([n, de, nombre]) => `el <strong>${porc(n, de)}</strong> de los ${nombre} (${num(n)} de ${num(de)})`);
-  const cobertura = partes.length
-    ? ` De todos los distritos con destrucción vial${esc(donde)}, el decreto incluye `
-      + `${partes.length > 1 ? `${partes.slice(0, -1).join(", ")} y ${partes.at(-1)}` : partes[0]}.`
-    : "";
-  $("dec-lectura").innerHTML = `De los declarados${esc(donde)}, tuvieron destrucción vial solo en el Niño 2017: <strong>${num(d17 - dAmbos)}</strong>; `
-    + `solo en el Niño 2023: <strong>${num(d23 - dAmbos)}</strong>; en ambos: <strong>${num(dAmbos)}</strong>; `
-    + `en ninguno: <strong>${num(dNinguno)}</strong>.${cobertura}`;
+  $("dec-lectura").innerHTML = `De los declarados${esc(donde)}, tuvieron cualquier daño vial solo en el Niño 2017: `
+    + `<strong>${num(cifra.dano2017 - cifra.danoAmbos)}</strong>; solo en el Niño 2023: <strong>${num(cifra.dano2023 - cifra.danoAmbos)}</strong>; `
+    + `en ambos: <strong>${num(cifra.danoAmbos)}</strong>; en ninguno: <strong>${num(cifra.danoNinguno)}</strong>. `
+    + `Contando solo la destrucción vial, en el mismo orden: <strong>${num(cifra.dest2017 - cifra.destAmbos)}</strong>, `
+    + `<strong>${num(cifra.dest2023 - cifra.destAmbos)}</strong>, <strong>${num(cifra.destAmbos)}</strong> y <strong>${num(cifra.destNinguno)}</strong>.`;
 
   $("dec-grupo").innerHTML = [...GRUPOS_DECRETO].map(([clave, g]) =>
-    `<option value="${clave}"${clave === estado.grupoDecreto ? " selected" : ""}>${esc(g.t)} (${num(cuantos(g.f))})</option>`).join("");
+    `<option value="${clave}"${clave === estado.grupoDecreto ? " selected" : ""}>${esc(g.t)} (${num(cifra[clave])})</option>`).join("");
   dibujarTablaDecreto();
 }
 
