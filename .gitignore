@@ -1,0 +1,12 @@
+# Límites del IGN (21 MB): se recuperan con scripts/obtener_datos.py
+datos/originales/per_admin_boundaries.gdb.zip
+
+# Descargas incompletas
+*.part
+
+# Credenciales y claves API
+.env
+
+# Archivos temporales de Jupyter y Python
+.ipynb_checkpoints/
+__pycache__/

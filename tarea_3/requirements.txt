@@ -1,7 +1,0 @@
-# Obtención y procesamiento de datos (scripts/)
-pandas==2.3.3
-numpy==2.3.5
-geopandas==1.1.4
-pyogrio==0.13.0
-requests==2.34.2
-lxml==6.1.2
