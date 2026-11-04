@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>¿Cuánta infraestructura vial destruyeron los Niños Costeros de 2017 y 2023, dónde se concentró el daño y qué distritos la perdieron en ambos eventos?</title>
+<meta name="description" content="Tablero interactivo con los puentes y kilómetros de vía destruidos en los Niños Costeros de 2017 y 2023 en el Perú, por temporada, departamento y distrito.">
+<meta property="og:title" content="¿Cuánta infraestructura vial destruyeron los Niños Costeros de 2017 y 2023, dónde se concentró el daño y qué distritos la perdieron en ambos eventos?">
+<meta property="og:description" content="Tablero interactivo con los puentes y kilómetros de vía destruidos en los Niños Costeros de 2017 y 2023 en el Perú, por temporada, departamento y distrito.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#f2f0eb">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌉</text></svg>">
+<link rel="stylesheet" href="estilos.css">
+<script defer src="plotly-4.0.0.min.js"></script>
+<script defer src="app.js"></script>
+</head>
+<body>
+<div class="pagina">
+
+<aside class="filtros" aria-label="Filtros">
+  <details id="filtros-plegable" open>
+  <summary><h2>Filtros</h2></summary>
+  <div class="campo">
+    <label for="f-temporada">Temporada de lluvias</label>
+    <select id="f-temporada"></select>
+    <small>Cada temporada va de diciembre a mayo.</small>
+  </div>
+  <div class="campo">
+    <label for="f-indicador">Indicador</label>
+    <select id="f-indicador"></select>
+    <small>Colorea el mapa y ordena los rankings.</small>
+  </div>
+  <div class="campo">
+    <label for="f-departamento">Departamento</label>
+    <select id="f-departamento"></select>
+  </div>
+  <div class="campo">
+    <label for="f-distrito">Buscar distrito</label>
+    <div class="combo">
+      <input id="f-distrito" type="text" role="combobox" aria-expanded="false" aria-controls="f-distrito-lista"
+             aria-autocomplete="list" autocomplete="off" spellcheck="false" placeholder="Escribe un nombre…">
+      <button id="f-distrito-limpiar" type="button" aria-label="Quitar el distrito elegido" hidden>×</button>
+      <ul id="f-distrito-lista" role="listbox" aria-label="Distritos" hidden></ul>
+    </div>
+    <small>Solo distritos con algún daño vial registrado entre 2016 y 2024.</small>
+  </div>
+  <p class="sub">Datos: INDECI-SINPAD, IGP/ENFEN e IGN. Periodo: enero de 2016 a mayo de 2024.<br>
+    <a id="enlace-repo" href="#">Código y datos en GitHub</a></p>
+  </details>
+</aside>
+
+<main>
+  <h1>¿Cuánta infraestructura vial destruyeron los Niños Costeros de 2017 y 2023, dónde se concentró el daño y qué distritos la perdieron en ambos eventos?</h1>
+  <p>Este tablero suma los puentes y kilómetros de vía que las autoridades locales reportaron como destruidos o afectados
+    por lluvias, huaicos e inundaciones en el SINPAD. Compara las temporadas de lluvias de los dos Niños costeros con una
+    temporada normal y marca los distritos que perdieron infraestructura en ambos.</p>
+  <p class="sub">Cobertura: Perú, por distrito · enero de 2016 a mayo de 2024 · temporadas de diciembre a mayo · Fuentes:
+    INDECI-SINPAD (emergencias y daños), IGP y ENFEN (ICEN y fechas oficiales de El Niño), IGN (límites distritales).</p>
+
+  <noscript><p class="aviso">Este tablero necesita JavaScript para filtrar los datos y dibujar el mapa.</p></noscript>
+  <p id="aviso" class="aviso" role="status">Cargando los datos…</p>
+
+  <div id="tablero" hidden>
+    <div id="kpis" class="kpis"></div>
+
+    <div class="pestanas" role="tablist" aria-label="Secciones del tablero">
+      <button type="button" role="tab" id="t-mapa" aria-controls="p-mapa" aria-selected="true">Mapa</button>
+      <button type="button" role="tab" id="t-temporadas" aria-controls="p-temporadas" aria-selected="false" tabindex="-1">Temporadas</button>
+      <button type="button" role="tab" id="t-departamentos" aria-controls="p-departamentos" aria-selected="false" tabindex="-1">Departamentos</button>
+      <button type="button" role="tab" id="t-reincidentes" aria-controls="p-reincidentes" aria-selected="false" tabindex="-1">Reincidentes</button>
+      <button type="button" role="tab" id="t-hallazgos" aria-controls="p-hallazgos" aria-selected="false" tabindex="-1">Hallazgos</button>
+      <button type="button" role="tab" id="t-emergencia" aria-controls="p-emergencia" aria-selected="false" tabindex="-1">Emergencia 2026</button>
+      <button type="button" role="tab" id="t-metodologia" aria-controls="p-metodologia" aria-selected="false" tabindex="-1">Metodología y fuentes</button>
+    </div>
+
+    <section role="tabpanel" id="p-mapa" aria-labelledby="t-mapa">
+      <fieldset class="modos">
+        <legend class="oculto">Qué mostrar en el mapa</legend>
+        <label><input type="radio" name="modo" value="dano" checked> Daño en la temporada elegida</label>
+        <label><input type="radio" name="modo" value="reincidencia"> Reincidencia entre 2017 y 2023</label>
+      </fieldset>
+      <div id="ley-mapa" class="ley"></div>
+      <div id="g-mapa" class="grafico grafico-mapa"></div>
+      <p id="nota-mapa" class="nota"></p>
+      <div id="ficha"></div>
+    </section>
+
+    <section role="tabpanel" id="p-temporadas" aria-labelledby="t-temporadas" hidden>
+      <h3 id="h-temporadas"></h3>
+      <p class="nota">Línea punteada: mediana de las 4 temporadas sin ningún mes de Niño costero (2017-18, 2019-20, 2020-21 y
+        2021-22). Las cifras sobre las barras son las de los dos Niños costeros.</p>
+      <div id="g-temporadas" class="grafico"></div>
+      <h3 id="h-mensual"></h3>
+      <p class="nota">Las franjas marcan los meses de cada evento El Niño costero según la lista oficial del IGP (criterio
+        ENFEN). La línea punteada del ICEN es 0,4 °C, el umbral de condición cálida. El ICEN es nacional: no cambia con el
+        departamento.</p>
+      <div id="g-mensual" class="grafico"></div>
+      <h3 id="h-peligros"></h3>
+      <p id="nota-peligros" class="nota"></p>
+      <div id="g-peligros" class="grafico"></div>
+    </section>
+
+    <section role="tabpanel" id="p-departamentos" aria-labelledby="t-departamentos" hidden>
+      <h3 id="h-departamentos"></h3>
+      <div id="ley-departamentos" class="ley"></div>
+      <p id="nota-departamentos" class="nota" hidden></p>
+      <div id="rankings" class="rankings"></div>
+    </section>
+
+    <section role="tabpanel" id="p-reincidentes" aria-labelledby="t-reincidentes" hidden>
+      <p id="reinc-resumen"></p>
+      <p id="reinc-vacio" class="aviso" hidden>No hay distritos reincidentes en esta zona.</p>
+      <div id="reinc-contenido">
+        <h3 id="h-top"></h3>
+        <div id="g-top" class="grafico"></div>
+        <h3>Lista completa</h3>
+        <div class="campo campo-busqueda">
+          <label for="reinc-busqueda">Filtrar por distrito o provincia</label>
+          <input id="reinc-busqueda" type="search" placeholder="Por ejemplo: Supe" autocomplete="off">
+        </div>
+        <div class="tabla-caja" tabindex="0" role="region" aria-label="Lista de distritos reincidentes">
+          <table id="reinc-tabla"></table>
+        </div>
+        <p class="acciones">
+          <button type="button" id="reinc-descargar" class="boton">Descargar esta lista (CSV)</button>
+          <span id="reinc-conteo" class="sub"></span>
+        </p>
+        <p class="nota">Reincidente: al menos un puente destruido o algún km de vía destruido tanto en la temporada 2016-17 como
+          en la 2022-23. Las columnas 2017 y 2023 son puentes y km de vía destruidos en cada Niño. «Temporadas con destrucción»
+          cuenta las 8 temporadas completas del periodo (2016-17 a 2023-24).</p>
+      </div>
+    </section>
+
+    <section role="tabpanel" id="p-hallazgos" aria-labelledby="t-hallazgos" hidden></section>
+
+    <section role="tabpanel" id="p-emergencia" aria-labelledby="t-emergencia" hidden>
+      <p id="dec-resumen"></p>
+      <p class="nota">La declaratoria señala un peligro inminente, no daños ocurridos.</p>
+      <div id="dec-kpis" class="kpis"></div>
+      <p id="dec-lectura"></p>
+      <p class="nota">Niño 2017 es la temporada 2016-17 y Niño 2023, la 2022-23, como en el resto del tablero. Destrucción vial: al
+        menos un puente destruido o algún km de vía destruido. «Cualquier daño» suma los distritos con infraestructura solo
+        afectada. Coincidir no anticipa el mismo daño, y no coincidir no significa estar a salvo: el SINPAD solo recoge lo que
+        reportan las autoridades locales.</p>
+      <h3>Lista de distritos declarados</h3>
+      <div class="campos-lista">
+        <div class="campo">
+          <label for="dec-grupo">Mostrar</label>
+          <select id="dec-grupo"></select>
+        </div>
+        <div class="campo">
+          <label for="dec-busqueda">Filtrar por distrito, provincia o departamento</label>
+          <input id="dec-busqueda" type="search" placeholder="Por ejemplo: Callao" autocomplete="off">
+        </div>
+      </div>
+      <div class="tabla-caja" tabindex="0" role="region" aria-label="Lista de distritos declarados en emergencia">
+        <table id="dec-tabla"></table>
+      </div>
+      <p class="acciones">
+        <button type="button" id="dec-descargar" class="boton">Descargar esta lista (CSV)</button>
+        <span id="dec-conteo" class="sub"></span>
+      </p>
+      <p class="nota">Nombres y orden del Anexo del decreto (El Peruano, 3 de noviembre de 2026, págs. 15-25). Lima Metropolitana y
+        Lima Provincias se separan como en el resto del tablero. Callao no está en el filtro de departamento porque no tiene daño
+        vial en los datos: sus 4 distritos aparecen en la lista de todo el Perú.</p>
+    </section>
+
+    <section role="tabpanel" id="p-metodologia" aria-labelledby="t-metodologia" class="texto" hidden>
+      <h3>Fuentes</h3>
+      <div class="tabla-caja tabla-libre" tabindex="0" role="region" aria-label="Fuentes de datos">
+        <table>
+          <thead><tr><th>Fuente</th><th>Qué aporta</th><th>Licencia</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>INDECI, SINPAD: <a href="https://www.datosabiertos.gob.pe/dataset/emergencias-y-da%C3%B1os-nivel-nacional-por-departamento">Emergencias y daños a nivel nacional</a></td>
+              <td>Puentes y km de vía destruidos y afectados por emergencia y distrito</td>
+              <td>ODC-By</td>
+            </tr>
+            <tr>
+              <td>IGP y ENFEN: <a href="http://met.igp.gob.pe/variabclim/indices.html">Índice Costero El Niño (ICEN)</a></td>
+              <td>Calentamiento del mar y fechas oficiales de cada Niño costero</td>
+              <td>Dato público</td>
+            </tr>
+            <tr>
+              <td>IGN, vía OCHA HDX: <a href="https://data.humdata.org/dataset/cod-ab-per">límites administrativos (COD-AB)</a></td>
+              <td>Polígonos de los distritos (vigentes al 14/07/2020)</td>
+              <td>CC BY-IGO</td>
+            </tr>
+            <tr>
+              <td>El Peruano, Normas Legales (03/11/2026): Decreto Supremo Nº 149-2026-PCM, Anexo, págs. 15-25</td>
+              <td>Distritos declarados en emergencia (solo la pestaña Emergencia 2026)</td>
+              <td>Norma legal</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Los archivos del SINPAD, el IGP y el IGN se descargaron el 01/11/2026. El Anexo del decreto se transcribió a Excel el
+        03/11/2026. El registro con procedencia, licencia y SHA-256 de cada uno está en
+        <a id="enlace-fuentes" href="#"><code>datos/fuentes.csv</code></a>.</p>
+
+      <h3>Cómo se construyó</h3>
+      <ul>
+        <li><strong>Periodo:</strong> enero de 2016 a mayo de 2024 (10 817 registros de lluvias, huaicos e inundaciones con daño vial).</li>
+        <li><strong>Temporada de lluvias:</strong> de diciembre a mayo; 2016-17 va de diciembre de 2016 a mayo de 2017. El 98,2 % de los puentes destruidos del periodo cae en esos meses.</li>
+        <li><strong>Fechas oficiales de los eventos de El Niño costero</strong> (IGP, criterio ENFEN 2024). Estos son los que coinciden con el periodo de estudio:
+          <div class="tabla-caja tabla-libre" tabindex="0" role="region" aria-label="Fechas oficiales de los eventos de El Niño costero">
+            <table id="tabla-eventos">
+              <thead><tr><th>Evento</th><th>Inicio</th><th>Fin</th><th class="n">Duración</th><th>Magnitud</th><th>Meses dentro de una temporada de lluvias</th></tr></thead>
+              <tbody>
+                <tr><td>Niño costero 2015-16</td><td>abril de 2015</td><td>mayo de 2016</td><td class="n">14 meses</td><td>Fuerte</td><td>2015-16: enero a mayo de 2016 (temporada incompleta, solo en la serie mensual)</td></tr>
+                <tr><td><strong>Niño Costero 2017</strong></td><td>enero de 2017</td><td>abril de 2017</td><td class="n">4 meses</td><td>Moderado</td><td>2016-17: enero a abril de 2017</td></tr>
+                <tr><td>Niño costero 2018-19</td><td>noviembre de 2018</td><td>enero de 2019</td><td class="n">3 meses</td><td>Débil</td><td>2018-19: diciembre de 2018 y enero de 2019</td></tr>
+                <tr><td><strong>Niño Costero 2023</strong></td><td>marzo de 2023</td><td>febrero de 2024</td><td class="n">12 meses</td><td>Fuerte</td><td>2022-23: marzo a mayo de 2023<br>2023-24: diciembre de 2023 a febrero de 2024</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="nota">En negrita, los dos eventos que compara el tablero, cada uno con su temporada principal (2016-17 y 2022-23). Las otras temporadas con meses de Niño costero no entran en esa comparación ni en la línea base.</p>
+        </li>
+        <li><strong>Línea base:</strong> mediana de las 4 temporadas sin ningún mes de Niño costero (2017-18, 2019-20, 2020-21 y 2021-22). «Veces una temporada normal» divide el valor de la temporada entre esa mediana, en la misma zona.</li>
+        <li><strong>Km de vía</strong> = km de carretera (red nacional y departamental) + km de camino rural (red vecinal).</li>
+        <li><strong>Distrito con destrucción vial:</strong> al menos un puente destruido o algún km de vía destruido en la temporada.</li>
+        <li><strong>Reincidente:</strong> distrito con destrucción vial tanto en 2016-17 como en 2022-23.</li>
+        <li><strong>Peligros:</strong> lluvias, huaicos y deslizamientos (con derrumbes y aluviones) e inundaciones.</li>
+        <li><strong>Valores extremos:</strong> se revisaron a mano los 22 valores sobre el percentil 99,9. Solo se anuló un registro inverosímil (Candarave, Tacna, 2024: 100 puentes destruidos y 1000 afectados).</li>
+        <li><strong>Emergencia 2026:</strong> el Anexo del decreto no trae UBIGEO, así que sus 1380 distritos se cruzaron por nombre con el mapa del IGN: 1365 coinciden tal cual, 5 con otra escritura (Hualla, Santa Cruz de Toledo, Chacapalca, San Pedro de Laraos y Raimondi), 2 comparten polígono (Mazamari y Pangoa) y 8 no están en el mapa de 2020. La coincidencia con cada Niño se calcula por UBIGEO, con la misma definición de distrito con destrucción vial.</li>
+      </ul>
+
+      <h3>Limitaciones</h3>
+      <ul>
+        <li><strong>Subregistro:</strong> el SINPAD recoge lo que reportan las autoridades locales; puede haber daños no reportados.</li>
+        <li><strong>El SINPAD no marca qué daños se deben a El Niño:</strong> se aproxima con la temporada de lluvias y las fechas oficiales. Parte del daño de una temporada con Niño puede deberse a otras lluvias.</li>
+        <li><strong>Más reportes con los años:</strong> el sistema pasó de 4492–5489 registros anuales en 2018-2020 a 7251–7799 en 2021-2022 sin un Niño fuerte. Por eso la línea base usa la mediana y los titulares usan puentes.</li>
+        <li><strong>Los puentes se cuentan sin distinguir tamaño:</strong> un puente peatonal pesa lo mismo que uno vehicular.</li>
+        <li><strong>Posible mezcla de unidades en caminos rurales</strong> («km o metros» según el diccionario): los 2300 km de camino rural destruidos en 2017 deben leerse con cautela.</li>
+        <li><strong>Sin valorización en soles:</strong> el dataset solo trae el costo de la ayuda humanitaria.</li>
+        <li><strong>Mapa de 2020:</strong> 16 distritos creados después no tienen polígono (60 registros viales). Si un distrito se dividió después de 2017, su daño de 2023 queda en el distrito nuevo y la reincidencia puede subestimarse.</li>
+        <li><strong>Línea base corta:</strong> solo hay 4 temporadas normales en el periodo.</li>
+        <li><strong>Enero a mayo de 2016 solo aparece en la serie mensual:</strong> su temporada (2015-16) queda incompleta porque el periodo empieza en enero de 2016, así que no se muestra en los gráficos por temporada.</li>
+        <li><strong>Emergencia 2026, una foto del decreto:</strong> la lista refleja el Anexo publicado el 03/11/2026, vigente por 60 días calendario, y no recoge prórrogas ni cambios posteriores. Un distrito creado después de 2017 no puede tener registros de ese Niño con su propio código: su daño puede haber quedado en el distrito del que se separó. Alto Trujillo no tiene UBIGEO ni registros en los datos, y cuenta como sin daño registrado.</li>
+      </ul>
+
+      <h3>Descargar los datos filtrados</h3>
+      <p id="nota-descarga" class="nota"></p>
+      <p class="acciones"><button type="button" id="sel-descargar" class="boton">Descargar CSV</button></p>
+      <p>Código, datos y documentación: <a id="enlace-codigo" href="#"></a></p>
+    </section>
+  </div>
+</main>
+</div>
+</body>
+</html>

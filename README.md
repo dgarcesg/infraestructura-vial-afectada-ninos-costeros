@@ -1,4 +1,8 @@
-# Tarea 3 · Puentes y carreteras que se llevaron los Niños Costeros
+# Infraestructura vial afectada por los Niños Costeros
+
+**Tablero interactivo:** https://dgarcesg.github.io/infraestructura-vial-afectada-ninos-costeros/
+
+Este repositorio contiene solo el dashboard: la página, sus datos y el código que los prepara. Parte de [diplomado_python_intermedio](https://github.com/dgarcesg/diplomado_python_intermedio), donde están la entrega original del curso y el reel.
 
 ## 1. Tema y pregunta de investigación
 
@@ -13,20 +17,18 @@
 
 ## 2. Descripción del proyecto
 
-El proyecto tiene dos productos, construidos con los mismos datos:
-
-- **Dashboard interactivo** ([infraestructura-ninos-costeros.streamlit.app](https://infraestructura-ninos-costeros.streamlit.app/)), hecho en Streamlit. Muestra 4 indicadores clave y un mapa distrital del daño y de la reincidencia. También compara cada temporada con la línea base, sigue el daño mes a mes junto al calentamiento del mar y tiene rankings por departamento y una lista de distritos reincidentes. Se filtra por temporada, indicador, departamento y distrito, y permite descargar los datos filtrados.
-- **Reel vertical de unos 65 segundos** (`reel/`): cuenta los hallazgos con gráficos y mapas, narrado con mi voz clonada con IA, con subtítulos y música de fondo.
+El producto es un **dashboard interactivo** ([dgarcesg.github.io/infraestructura-vial-afectada-ninos-costeros](https://dgarcesg.github.io/infraestructura-vial-afectada-ninos-costeros/)), una página estática hecha con HTML, JavaScript y Plotly que corre en el navegador, sin servidor. Muestra 4 indicadores clave y un mapa distrital del daño y de la reincidencia. También compara cada temporada con la línea base, sigue el daño mes a mes junto al calentamiento del mar y tiene rankings por departamento y una lista de distritos reincidentes. Se filtra por temporada, indicador, departamento y distrito, y permite descargar los datos filtrados. Fuera del periodo de estudio, la pestaña **Emergencia 2026** lista los distritos declarados en emergencia por el Decreto Supremo Nº 149-2026-PCM y cuenta cuántos tuvieron destrucción vial en cada Niño.
 
 ## 3. Fuentes de datos y metodología
 
-El registro completo de cada archivo (URL, fecha de descarga, licencia, tamaño y SHA-256) está en [`datos/fuentes.csv`](datos/fuentes.csv). Todos los archivos se descargaron el **01/11/2026**.
+El registro completo de cada archivo (procedencia, fecha, licencia, tamaño y SHA-256) está en [`datos/fuentes.csv`](datos/fuentes.csv). Los archivos del SINPAD, el IGP y el IGN se descargaron el **01/11/2026**. El Anexo del decreto de la pestaña Emergencia 2026 se transcribió a Excel el **03/11/2026**, desde El Peruano (Normas Legales, 03/11/2026, págs. 15-25), y no entra en ninguna otra cifra.
 
 | Fuente | Archivos | Licencia |
 |---|---|---|
 | INDECI, SINPAD: [Emergencias y daños a nivel nacional](https://www.datosabiertos.gob.pe/dataset/emergencias-y-da%C3%B1os-nivel-nacional-por-departamento) (Plataforma Nacional de Datos Abiertos) | `BD_2003-2025_EMERGENCIAS.csv`, diccionario y metadatos | ODC-By |
 | IGP y ENFEN: [Índice Costero El Niño (ICEN)](http://met.igp.gob.pe/variabclim/indices.html) y la lista oficial de eventos El Niño costero (ENFEN, 2024) | `ICEN.txt`, `lista_eventos_ICEN.html` | Dato público; se cita la fuente |
 | IGN, vía OCHA HDX: [límites administrativos del Perú (COD-AB)](https://data.humdata.org/dataset/cod-ab-per), vigentes al 14/07/2020 | `per_admin_boundaries.gdb.zip` (no se versiona: se baja con el script) | CC BY-IGO |
+| El Peruano, Normas Legales (03/11/2026): Decreto Supremo Nº 149-2026-PCM y transcripción de su Anexo | `2571017-4.pdf`, `DS_149-2026-PCM_distritos_emergencia.xlsx` | Norma legal |
 
 **Fechas oficiales de los dos eventos** (lista de eventos del IGP basada en el ICEN, criterio ENFEN 2024):
 
@@ -71,7 +73,7 @@ El ICEN es el índice oficial con el que el ENFEN, la comisión multisectorial d
 - **Concentración:** porcentaje del total nacional de la temporada que corresponde a los 10 distritos con más daño.
 - El 98,2 % de los puentes destruidos del periodo cae entre diciembre y mayo, lo que respalda el corte por temporada.
 
-Las salidas están en `web/data/`: `por_temporada.csv`, `por_temporada_peligro.csv`, `serie_mensual.csv` (nacional y por departamento, con el ICEN), `por_departamento.csv`, `por_distrito.csv`, `reincidentes.csv` y `kpis.json`.
+Las salidas están en `datos/tablas/`: `por_temporada.csv`, `por_temporada_peligro.csv`, `serie_mensual.csv` (nacional y por departamento, con el ICEN), `por_departamento.csv`, `por_distrito.csv`, `reincidentes.csv` y `kpis.json`.
 
 ## 4. Hallazgos principales
 
@@ -91,7 +93,7 @@ Las salidas están en `web/data/`: `por_temporada.csv`, `por_temporada_peligro.c
 **3. 294 distritos perdieron infraestructura vial en los dos Niños, y concentran el 61 % de los puentes destruidos en ambos eventos (696 de 1148).**
 - Los departamentos con más reincidentes son Áncash (49), Piura (41), Lima Provincias (40), Ayacucho (36) y Cajamarca (28).
 - Los que más puentes perdieron sumando los dos eventos son Cochamarca (Lima Provincias, 32), San Benito (Cajamarca, 30), Supe (Lima Provincias, 26) y Huarmaca (Piura, 25).
-- La lista completa está en [`web/data/reincidentes.csv`](web/data/reincidentes.csv).
+- La lista completa está en [`datos/tablas/reincidentes.csv`](datos/tablas/reincidentes.csv).
 
 **4. Cada Niño golpeó de forma distinta.**
 - El de 2017 destruyó tres veces más km de vía que el de 2023: 5608 km frente a 1885.
@@ -113,9 +115,8 @@ Las salidas están en `web/data/`: `por_temporada.csv`, `por_temporada_peligro.c
 
 ## 6. Enlaces
 
-- Dashboard: https://infraestructura-ninos-costeros.streamlit.app/
-- Reel: https://drive.google.com/file/d/1KCr2tccy8RB4c-hOPeQL6rROYDBzQmmE/view?usp=sharing
-- Publicación de LinkedIn: *(pendiente)*
+- Dashboard: https://dgarcesg.github.io/infraestructura-vial-afectada-ninos-costeros/
+- Publicación de LinkedIn: https://www.linkedin.com/feed/update/urn:li:activity:7522884339085516800/
 
 ## 7. Cómo reproducir
 
@@ -123,56 +124,38 @@ Las salidas están en `web/data/`: `por_temporada.csv`, `por_temporada_peligro.c
 pip install -r requirements.txt
 python scripts/obtener_datos.py      # descarga en datos/originales/ y actualiza datos/fuentes.csv
 python scripts/procesar_datos.py     # escribe datos/procesados/
-python scripts/analizar_datos.py     # escribe los indicadores en web/data/
+python scripts/analizar_datos.py     # escribe los indicadores en datos/tablas/
 ```
 
 Si un archivo ya existe, `obtener_datos.py` no lo vuelve a descargar: solo verifica su SHA-256 contra `datos/fuentes.csv`. El CSV del SINPAD se versiona en el repositorio porque el portal lo reemplaza cada semestre.
 
-**Dashboard:**
+**Dashboard** (página estática en `docs/`):
 
 ```bash
-pip install -r web/requirements.txt
-streamlit run web/app.py
+python scripts/cruzar_decreto.py     # solo si cambia el Excel del decreto: da su UBIGEO a cada distrito del Anexo
+python scripts/preparar_pagina.py    # copia las tablas de datos/tablas/ a docs/datos/
+python -m http.server 8000 --directory docs    # y abre http://localhost:8000
 ```
-
-**Reel** (en el entorno de la Sesión 15, con `qwen-tts` y `faster-whisper`):
-
-```bash
-python reel/imagenes.py                                         # gráficos y mapa de cada escena (entorno de los scripts)
-python reel/hacer_reel.py voz --voz mi_voz.m4a                  # voz clonada y subtítulos
-python reel/hacer_reel.py video --musica reel/musica.mp3 --credito-musica "Título · Autor (Pixabay)"
-```
-
-La grabación de mi voz, la música y las salidas (`reel/salidas/`) no se versionan.
 
 ## 8. Uso de inteligencia artificial
 
-- **Claude Code (Anthropic)** me ayudó a escribir los scripts de obtención, procesamiento y análisis, el dashboard, el borrador del guion y el montaje del reel. Yo tomé las decisiones de alcance: el periodo, la línea base y qué afirmaciones incluir. También revisé las cifras contra los datos.
-- **Qwen3-TTS 0.6B (Alibaba, Apache 2.0)** generó la narración del reel clonando mi propia voz a partir de 16,5 segundos de una grabación propia.
-- **Whisper large-v3-turbo (OpenAI, MIT)**, con `faster-whisper`, generó los subtítulos y midió qué tan bien se entiende cada escena.
+**Claude Code (Anthropic)** me ayudó a escribir los scripts de obtención, procesamiento y análisis, y el dashboard. Yo tomé las decisiones de alcance: el periodo, la línea base y qué afirmaciones incluir. También revisé las cifras contra los datos.
 
 ## Estructura
 
 ```text
-tarea_3/
 ├── README.md
 ├── requirements.txt
+├── docs/                    # la página publicada: index.html, app.js, estilos.css, Plotly y datos
 ├── datos/
-│   ├── fuentes.csv          # URL, licencia, fecha y SHA-256 de cada original
-│   ├── originales/          # SINPAD, ICEN, eventos El Niño y límites del IGN
-│   └── procesados/          # emergencias_viales.csv y tablas de control
-├── scripts/
-│   ├── obtener_datos.py     # Paso 2: descarga y registro de fuentes
-│   ├── procesar_datos.py    # Paso 3: limpieza y unificación
-│   └── analizar_datos.py    # Paso 4: indicadores para el dashboard
-├── web/
-│   ├── app.py               # dashboard en Streamlit
-│   ├── requirements.txt
-│   ├── .streamlit/          # tema negro
-│   └── data/                # tablas, kpis.json y distritos.geojson del dashboard
-└── reel/
-    ├── guion.json           # escenas: frase narrada, cifra, etiqueta, imagen y origen de cada cifra
-    ├── imagenes.py          # gráficos y mapa de cada escena
-    ├── imagenes/            # las 7 imágenes del reel
-    └── hacer_reel.py        # voz clonada, subtítulos, música y video 1080 x 1920
+│   ├── fuentes.csv          # procedencia, licencia, fecha y SHA-256 de cada original
+│   ├── originales/          # SINPAD, ICEN, eventos El Niño y decreto; los límites del IGN se descargan con el script
+│   ├── procesados/          # emergencias_viales.csv, tablas de control y distritos del decreto
+│   └── tablas/              # tablas, kpis.json y distritos.geojson que alimentan la página
+└── scripts/
+    ├── obtener_datos.py     # descarga y registro de fuentes
+    ├── procesar_datos.py    # limpieza y unificación
+    ├── analizar_datos.py    # indicadores para el dashboard
+    ├── cruzar_decreto.py    # UBIGEO de los distritos del Decreto Supremo 149-2026-PCM
+    └── preparar_pagina.py   # datos de la página estática (docs/datos/)
 ```

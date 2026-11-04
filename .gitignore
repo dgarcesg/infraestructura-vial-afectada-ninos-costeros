@@ -6,15 +6,7 @@ datos/originales/per_admin_boundaries.gdb.zip
 
 # Credenciales y claves API
 .env
-.streamlit/secrets.toml
 
 # Archivos temporales de Jupyter y Python
 .ipynb_checkpoints/
 __pycache__/
-
-# Grabación de voz del autor para el reel (no se publica)
-audio-modelo-tarea-3.m4a
-
-# Reel: salidas (voz clonada, audio y video) y música con licencia de terceros
-reel/salidas/
-reel/musica.*

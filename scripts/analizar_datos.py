@@ -1,6 +1,6 @@
-"""Paso 4 · Indicadores.
+"""Indicadores.
 
-Lee datos/procesados/emergencias_viales.csv y escribe en web/data/ las tablas
+Lee datos/procesados/emergencias_viales.csv y escribe en datos/tablas/ las tablas
 que usa el dashboard:
 
 - por_temporada.csv           totales de cada temporada dic-may y su multiplicador
@@ -25,7 +25,7 @@ import pandas as pd
 
 RAIZ = Path(__file__).resolve().parents[1]
 PROCESADOS = RAIZ / "datos" / "procesados"
-SALIDA = RAIZ / "web" / "data"
+SALIDA = RAIZ / "datos" / "tablas"
 
 VIALES = ["puentes_destruidos", "puentes_afectados",
           "carretera_destruida_km", "carretera_afectada_km",

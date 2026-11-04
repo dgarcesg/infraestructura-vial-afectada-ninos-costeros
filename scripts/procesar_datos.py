@@ -1,4 +1,4 @@
-"""Paso 3 · Limpieza y unificación.
+"""Limpieza y unificación.
 
 Lee el CSV 2003-2025 del SINPAD, se queda con los registros de enero de 2016 a
 mayo de 2024 (cierre de la temporada de lluvias del Niño Costero 2023), limpia

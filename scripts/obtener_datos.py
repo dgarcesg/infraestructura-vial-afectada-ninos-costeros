@@ -1,8 +1,8 @@
-"""Paso 2 · Obtención de datos.
+"""Obtención de datos.
 
 Descarga en datos/originales/ los archivos de los que parte el proyecto y deja
 constancia de su procedencia en datos/fuentes.csv (URL, fecha de descarga,
-licencia, tamaño y SHA-256), como en la Tarea 2.
+licencia, tamaño y SHA-256).
 
 - SINPAD (INDECI): emergencias y daños 2003-2025, diccionario y metadatos. El
   análisis usa enero de 2016 a mayo de 2024; el archivo 2026-S1 del portal no se usa.
@@ -137,6 +137,10 @@ def main():
             print(f"  ¡atención! el SHA-256 de {a['archivo']} cambió respecto al registrado")
         filas.append({**a, "fecha_descarga": fecha, "ultima_modificacion_servidor": modificado,
                       "bytes": destino.stat().st_size, "sha256": hash_actual})
+
+    # Los que no se descargan, como el Anexo del decreto transcrito a Excel, conservan su registro.
+    descargables = {a["archivo"] for a in ARCHIVOS}
+    filas += [fila for archivo, fila in previos.items() if archivo not in descargables]
 
     with open(FUENTES, "w", encoding="utf-8", newline="") as f:
         escritor = csv.DictWriter(f, fieldnames=COLUMNAS)
