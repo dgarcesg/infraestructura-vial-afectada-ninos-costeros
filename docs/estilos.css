@@ -111,6 +111,7 @@ input::placeholder { color: var(--tinta-3); opacity: 1; }
 .kpi { background: var(--superficie); border: 1px solid var(--grilla); border-radius: 8px; padding: 14px 16px; min-height: 128px; }
 .kpi-t { color: var(--tinta-2); font-size: 0.85rem; }
 .kpi-v { font-size: 2rem; font-weight: 600; line-height: 1.25; margin: 4px 0; font-variant-numeric: tabular-nums; }
+.kpi-p { color: var(--tinta-2); font-size: 0.6em; font-weight: 500; white-space: nowrap; }
 .kpi-n { color: var(--tinta-3); font-size: 0.8rem; line-height: 1.35; }
 
 /* --- Pestañas --- */
