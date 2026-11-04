@@ -1,6 +1,0 @@
-# Dependencias de la app de Streamlit (app.py). La app solo lee CSV: no necesita
-# PaddleOCR, faster-whisper ni modelos LLM. Los notebooks usan el entorno del curso
-# (uv sync --group docai --group audio).
-streamlit==1.62.0
-pandas==2.3.3
-plotly==7.0.0

@@ -1,6 +1,0 @@
-modalidad,modelo,rol,metrica,valor,latencia,unidad_latencia,seleccionado
-documento,PaddleOCR PP-OCRv6,línea base,CER,0.3734,106.64,segundos por página,True
-documento,EasyOCR 1.7,alternativo,CER,0.5352,57.88,segundos por página,False
-audio,faster-whisper small,línea base,WER,0.1591,0.46,RTF,False
-audio,faster-whisper large-v3-turbo,Parte 1,WER,0.1474,0.7,RTF,True
-audio,Parakeet TDT 0.6B v3,alternativo,WER,0.202,0.22,RTF,False
